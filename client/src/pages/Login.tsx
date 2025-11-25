@@ -18,26 +18,41 @@ export const Login: React.FC = () => {
     React.useEffect(() => {
         const params = new URLSearchParams(window.location.search);
         const token = params.get('token');
+
         if (token) {
-            handleGoogleLogin(token);
+            console.log('Token found in URL:', token);
+
+            const handleGoogleLogin = async () => {
+                try {
+                    const profileRes = await axios.get(`${API_BASE_URL}/auth/profile`, {
+                        headers: { Authorization: `Bearer ${token}` }
+                    });
+
+                    console.log('Profile data:', profileRes.data);
+
+                    login(token, profileRes.data);
+
+                    // Clear the token from URL
+                    window.history.replaceState({}, document.title, '/login');
+
+                    // Navigate based on role
+                    console.log('Navigating to:', profileRes.data.role);
+                    if (profileRes.data.role === 'super_admin') {
+                        navigate('/super-admin');
+                    } else if (profileRes.data.role === 'admin') {
+                        navigate('/admin');
+                    } else {
+                        navigate('/');
+                    }
+                } catch (err) {
+                    console.error('Google login error:', err);
+                    setError('Failed to login with Google');
+                }
+            };
+
+            handleGoogleLogin();
         }
-    }, []);
-
-    const handleGoogleLogin = async (token: string) => {
-        try {
-            const profileRes = await axios.get(`${API_BASE_URL}/auth/profile`, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
-
-            login(token, profileRes.data);
-
-            if (profileRes.data.role === 'super_admin') navigate('/super-admin');
-            else if (profileRes.data.role === 'admin') navigate('/admin');
-            else navigate('/');
-        } catch (err) {
-            setError('Failed to login with Google');
-        }
-    };
+    }, [login, navigate]);
 
     const validateEmail = (email: string) => {
         const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
