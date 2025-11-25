@@ -15,8 +15,11 @@ export class User {
     @Column({ unique: true })
     email: string;
 
-    @Column()
-    password: string; // Hashed password
+    @Column({ nullable: true })
+    password: string; // Hashed password (optional for OAuth)
+
+    @Column({ nullable: true })
+    googleId: string;
 
     @Column({ nullable: true })
     name: string;

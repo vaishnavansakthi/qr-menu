@@ -2,7 +2,7 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { UsersService } from '../users/users.service';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
-import { User } from '../users/user.entity';
+import { User, UserRole } from '../users/user.entity';
 
 @Injectable()
 export class AuthService {
@@ -32,6 +32,26 @@ export class AuthService {
         return this.usersService.create({
             ...userDto,
             password: hashedPassword,
+        });
+    }
+
+    async validateGoogleUser(googleUser: any): Promise<any> {
+        const user = await this.usersService.findByEmail(googleUser.email);
+        if (user) {
+            // If user exists but doesn't have googleId, update it
+            if (!user.googleId) {
+                user.googleId = googleUser.googleId;
+                await this.usersService.create(user); // Save updates
+            }
+            return user;
+        }
+        // Create new user
+        return this.usersService.create({
+            email: googleUser.email,
+            name: `${googleUser.firstName} ${googleUser.lastName}`,
+            googleId: googleUser.googleId,
+            password: '', // No password for Google users
+            role: UserRole.USER, // Default role
         });
     }
 }
