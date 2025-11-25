@@ -14,6 +14,13 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
         });
     }
 
+    // Override authenticate to add prompt parameter
+    authenticate(req: any, options: any) {
+        options = options || {};
+        options.prompt = 'select_account';
+        return super.authenticate(req, options);
+    }
+
     async validate(accessToken: string, refreshToken: string, profile: any, done: VerifyCallback): Promise<any> {
         const { name, emails, photos, id } = profile;
         const user = {

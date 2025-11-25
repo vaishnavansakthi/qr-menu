@@ -33,9 +33,14 @@ export class AuthController {
     @Get('google/callback')
     @UseGuards(AuthGuard('google'))
     async googleAuthRedirect(@Request() req, @Res() res) {
-        const { access_token } = await this.authService.login(req.user);
+        // req.user contains the Google profile data from the strategy
+        // We need to find or create the user in our database
+        const user = await this.authService.validateGoogleUser(req.user);
+
+        // Now generate JWT for the actual user
+        const { access_token } = await this.authService.login(user);
+
         // Redirect to frontend with token
-        // Assuming frontend is running on localhost:5173 for now, or use env var
         const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
         res.redirect(`${frontendUrl}/login?token=${access_token}`);
     }

@@ -45,13 +45,13 @@ export class AuthService {
             }
             return user;
         }
-        // Create new user
+        // Create new user with ADMIN role
         return this.usersService.create({
             email: googleUser.email,
             name: `${googleUser.firstName} ${googleUser.lastName}`,
             googleId: googleUser.googleId,
             password: '', // No password for Google users
-            role: UserRole.USER, // Default role
+            role: UserRole.ADMIN, // Google users get admin access
         });
     }
 }
