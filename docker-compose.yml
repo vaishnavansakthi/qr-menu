@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15
+    container_name: qr_menu_db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: qr_menu
+    ports:
+      - "5433:5432"
+    volumes:
+      - qr_menu_postgres_data:/var/lib/postgresql/data
+
+volumes:
+  qr_menu_postgres_data:
