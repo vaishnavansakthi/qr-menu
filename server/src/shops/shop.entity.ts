@@ -20,6 +20,9 @@ export class Shop {
     @Column({ nullable: true })
     qrCodeUrl: string;
 
+    @Column({ default: true })
+    isActive: boolean;
+
     @ManyToOne(() => User, (user) => user.id)
     owner: User;
 

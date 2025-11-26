@@ -18,6 +18,7 @@ interface Shop {
     longitude: number;
     qrCodeUrl: string;
     ownerId: string;
+    isActive: boolean;
     owner?: { name: string; email: string };
 }
 
@@ -129,6 +130,20 @@ export const SuperAdminDashboard: React.FC = () => {
         }
     };
 
+    const handleToggleActive = async (shop: Shop) => {
+        try {
+            await axios.patch(`${API_BASE_URL}/shops/${shop.id}`, {
+                isActive: !shop.isActive
+            }, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            fetchShops();
+        } catch (error) {
+            console.error('Failed to update shop status');
+            alert('Failed to update shop status');
+        }
+    };
+
     const handleLogout = () => {
         logout();
         navigate('/login');
@@ -202,7 +217,7 @@ export const SuperAdminDashboard: React.FC = () => {
                         <div className="flex items-center justify-between">
                             <div>
                                 <p className="text-purple-200 text-sm font-medium">Active Shops</p>
-                                <p className="text-3xl font-bold text-white mt-2">{Array.isArray(shops) ? shops.filter(s => s.ownerId).length : 0}</p>
+                                <p className="text-3xl font-bold text-white mt-2">{Array.isArray(shops) ? shops.filter(s => s.isActive).length : 0}</p>
                             </div>
                             <div className="bg-purple-500/30 p-3 rounded-xl">
                                 <svg className="w-8 h-8 text-purple-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -348,12 +363,22 @@ export const SuperAdminDashboard: React.FC = () => {
                         <div key={shop.id} className="glass backdrop-blur-xl bg-white/10 rounded-2xl border border-white/20 p-6 card-hover">
                             <div className="flex items-start justify-between mb-4">
                                 <h3 className="text-xl font-bold text-white">{shop.name}</h3>
-                                <span className={`px-3 py-1 rounded-full text-xs font-semibold ${shop.ownerId
-                                    ? 'bg-green-500/20 text-green-200 border border-green-500/50'
-                                    : 'bg-yellow-500/20 text-yellow-200 border border-yellow-500/50'
-                                    }`}>
-                                    {shop.ownerId ? 'Active' : 'Unassigned'}
-                                </span>
+                                <div className="flex flex-col items-end gap-2">
+                                    {!shop.ownerId && (
+                                        <span className="px-3 py-1 rounded-full text-xs font-semibold bg-yellow-500/20 text-yellow-200 border border-yellow-500/50">
+                                            Unassigned
+                                        </span>
+                                    )}
+                                    <button
+                                        onClick={() => handleToggleActive(shop)}
+                                        className={`px-3 py-1 rounded-full text-xs font-semibold border transition-all ${shop.isActive
+                                            ? 'bg-green-500/20 text-green-200 border-green-500/50 hover:bg-green-500/30'
+                                            : 'bg-red-500/20 text-red-200 border-red-500/50 hover:bg-red-500/30'
+                                            }`}
+                                    >
+                                        {shop.isActive ? 'Active' : 'Inactive'}
+                                    </button>
+                                </div>
                             </div>
 
                             <div className="space-y-2 mb-4">
