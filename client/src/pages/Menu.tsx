@@ -20,6 +20,7 @@ interface Shop {
     name: string;
     latitude: number;
     longitude: number;
+    isActive: boolean;
 }
 
 interface SessionOrder {
@@ -37,6 +38,7 @@ export const Menu: React.FC = () => {
     const [shop, setShop] = useState<Shop | null>(null);
     const [cart, setCart] = useState<CartItem[]>([]);
     const [loading, setLoading] = useState(true);
+    const [isShopInactive, setIsShopInactive] = useState(false);
     const [locationError, setLocationError] = useState('');
     const [locationGranted, setLocationGranted] = useState(false);
     const [showCart, setShowCart] = useState(false);
@@ -216,6 +218,13 @@ export const Menu: React.FC = () => {
         try {
             const shopRes = await axios.get(`${API_BASE_URL}/shops/${shopId}`);
             const shop = shopRes.data;
+
+            if (shop.isActive === false) {
+                setIsShopInactive(true);
+                setLoading(false);
+                return;
+            }
+
             setShop(shop);
 
             // Calculate distance using Haversine formula
@@ -340,6 +349,24 @@ export const Menu: React.FC = () => {
         );
     }
 
+    if (isShopInactive) {
+        return (
+            <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center p-4">
+                <div className="glass backdrop-blur-xl bg-white/10 p-12 rounded-3xl border border-red-500/30 text-center max-w-md">
+                    <div className="w-20 h-20 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <svg className="w-10 h-10 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                        </svg>
+                    </div>
+                    <h2 className="text-2xl font-bold text-white mb-4">QR Menu Inactive</h2>
+                    <p className="text-gray-300 mb-6">
+                        This QR Menu feature is currently inactive. Please contact the staff for assistance.
+                    </p>
+                </div>
+            </div>
+        );
+    }
+
     if (locationError) {
         return (
             <div className="min-h-screen bg-gradient-to-br from-red-900 via-purple-900 to-slate-900 flex items-center justify-center p-4">
@@ -421,10 +448,10 @@ export const Menu: React.FC = () => {
                                     <div className="text-right">
                                         <p className="text-sm text-gray-300 mb-1">{formatCurrency(order.totalAmount)}</p>
                                         <span className={`px-3 py-1 rounded-full text-xs font-semibold ${order.status === 'pending' ? 'bg-yellow-500/20 text-yellow-200 border border-yellow-500/40' :
-                                                order.status === 'preparing' ? 'bg-blue-500/20 text-blue-200 border border-blue-500/40' :
-                                                    order.status === 'ready' ? 'bg-green-500/20 text-green-200 border border-green-500/40' :
-                                                        order.status === 'completed' ? 'bg-gray-500/20 text-gray-200 border border-gray-500/40' :
-                                                            'bg-purple-500/20 text-purple-200 border border-purple-500/40'
+                                            order.status === 'preparing' ? 'bg-blue-500/20 text-blue-200 border border-blue-500/40' :
+                                                order.status === 'ready' ? 'bg-green-500/20 text-green-200 border border-green-500/40' :
+                                                    order.status === 'completed' ? 'bg-gray-500/20 text-gray-200 border border-gray-500/40' :
+                                                        'bg-purple-500/20 text-purple-200 border border-purple-500/40'
                                             }`}>
                                             {order.status.toUpperCase()}
                                         </span>
